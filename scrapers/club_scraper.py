@@ -123,14 +123,17 @@ def extract_websites(element):
     return [site['href'] for site in websites] if websites else ['N/A']
 
 def save_to_json(data, filename='clubs_by_category.json'):
-    """Save data to JSON file in a sibling 'data' directory"""
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    target_dir = os.path.normpath(os.path.join(current_dir, '..', 'data'))
+    # 假設你已經在 repo 根目錄下有 data 資料夾
+    target_dir = os.path.join(os.path.dirname(__file__), '..', 'data')
+    target_dir = os.path.abspath(target_dir)
+    print(f"[DEBUG] Saving to: {target_dir}")
     os.makedirs(target_dir, exist_ok=True)
-    filepath = os.path.join(target_dir, filename)
 
+    filepath = os.path.join(target_dir, filename)
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+
+    print(f"✅ Saved to: {filepath}")
 
 
 if __name__ == "__main__":
