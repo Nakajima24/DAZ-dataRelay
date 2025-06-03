@@ -22,7 +22,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        if [ -f "requirements.txt" ]; then
+          pip install -r requirements.txt
+        else
+          pip install requests beautifulsoup4
+        fi
 
     - name: Run Club Scraper
       run: python scrapers/club_scraper.py
