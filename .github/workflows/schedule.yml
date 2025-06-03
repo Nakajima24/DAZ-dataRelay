@@ -2,7 +2,7 @@ name: Scheduled Scrapers
 
 on:
   schedule:
-    - cron: '42 7 * * 1'  # UTC 時間 07:42（加州時間 00:42 夏令時）
+    - cron: '42 7 * * 1'  # UTC 时间 07:42（对应加州时间 00:42 夏令时）
   workflow_dispatch:
 
 jobs:
@@ -16,19 +16,17 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Run Club Scraper
+    - name: Install dependencies directly
       run: |
-        cd scrapers
-        python club_scraper.py
-        cd ..
+        pip install requests beautifulsoup4  # 直接安装所需套件
+
+    - name: Run Club Scraper
+      run: python scrapers/club_scraper.py  # 直接运行爬虫
 
     - name: Run Calendar Scraper
-      run: |
-        cd scrapers
-        python calendar_scraper.py
-        cd ..
+      run: python scrapers/calendar_scraper.py
 
-    - name: Commit and push
+    - name: Commit and push changes
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
