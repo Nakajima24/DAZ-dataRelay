@@ -141,7 +141,7 @@ if __name__ == "__main__":
             print(f"\n[{category}] {len(clubs)} clubs")
             print("First club example:")
             club = clubs[0]
-            print(f"Name: {club['name']}")
+            print(f"Name: {club['title']}")
             print(f"Public Email: {club['public_email']}")
             print(f"Officers: {len(club['officers'])} found")
             for i, officer in enumerate(club['officers'][:3], 1):
