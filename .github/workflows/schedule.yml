@@ -9,10 +9,11 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
+    
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0
+        persist-credentials: false
 
 
     - name: Show working directory and contents
@@ -44,7 +45,6 @@ jobs:
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
-        git add data/
+        git add data/ calendar.json clubs_by_category.json
         git commit -m "Auto-update: Club and calendar data" || echo "Nothing to commit"
-        git pull --rebase origin main
         git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:main
