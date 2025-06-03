@@ -11,6 +11,9 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+
 
     - name: Show working directory and contents
       run: |
