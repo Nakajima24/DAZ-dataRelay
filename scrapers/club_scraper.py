@@ -124,17 +124,14 @@ def extract_websites(element):
 
 def save_to_json(data, filename='clubs_by_category.json'):
     """Save data to JSON file in a sibling 'data' directory"""
-    # 設定目標路徑 (跳出當前資料夾，進入同層級的 data 資料夾)
-    target_dir = os.path.join('..', 'data')
-
-    # 確保目標資料夾存在
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    target_dir = os.path.normpath(os.path.join(current_dir, '..', 'data'))
     os.makedirs(target_dir, exist_ok=True)
-
-    # 組合完整路徑
     filepath = os.path.join(target_dir, filename)
 
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+
 
 if __name__ == "__main__":
     URL = "https://www.deanza.edu/clubs/club-list.html"
