@@ -29,12 +29,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run Club Scraper
-      run: python scrapers/club_scraper.py
-
     - name: Run Calendar Scraper
       run: python scrapers/calendar_scraper.py
-
+      
+    - name: Run Club Scraper
+      run: python scrapers/club_scraper.py
+      
     - name: Commit and push changes
       run: |
         git config --global user.name "GitHub Actions"
