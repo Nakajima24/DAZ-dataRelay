@@ -4,6 +4,7 @@ from collections import defaultdict
 import json
 import time
 import random
+import os
 
 def scrape_and_categorize_clubs(url):
     """
@@ -16,18 +17,18 @@ def scrape_and_categorize_clubs(url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
-    
+
     try:
         # Random delay to prevent blocking
         time.sleep(random.uniform(1, 3))
-        
+
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
-        
+
         categorized_clubs = defaultdict(list)
         club_cards = soup.find_all('div', class_='club-card')
-        
+
         for card in club_cards:
             # Extract category from class attributes
             classes = card.get('class', [])
@@ -35,7 +36,7 @@ def scrape_and_categorize_clubs(url):
                 (c.split('c-')[-1] for c in classes if c.startswith('c-')),
                 'Uncategorized'
             )
-            
+
             # Extract all club data
             club_data = {
                 'title': extract_h3_title(card),
@@ -44,11 +45,11 @@ def scrape_and_categorize_clubs(url):
                 'officers': extract_officers_info(card),
                 'websites': extract_websites(card)
             }
-            
+
             categorized_clubs[category].append(club_data)
-        
+
         return dict(categorized_clubs)
-    
+
     except Exception as e:
         print(f"Scraping failed: {e}")
         return None
@@ -58,11 +59,11 @@ def extract_h3_title(element):
     h3_tag = element.find('h3')
     if not h3_tag:
         return 'N/A'
-    
+
     # Remove unwanted elements
     for unwanted in h3_tag.find_all(class_='pull-right'):
         unwanted.decompose()
-    
+
     return h3_tag.get_text(strip=True)
 
 def extract_description(element):
@@ -81,39 +82,39 @@ def extract_public_email(element):
 def extract_officers_info(element):
     """Extract all officers' info (name, email, phone), each from their own contact section"""
     officers = []
-    
+
     # Find ALL contact sections (each officer has their own p.club-contact)
     contact_sections = element.find_all('p', class_='mb-3 pl-2 club-contact')
-    
+
     if not contact_sections:
         return [{'name': 'N/A', 'email': 'N/A', 'phone': 'N/A'}]
-    
+
     for contact_section in contact_sections:
         officer_data = {
             'name': 'N/A',
             'email': 'N/A',
             'phone': 'N/A'
         }
-        
+
         # Extract name (from <strong> tag)
         name_tag = contact_section.find('strong')
         if name_tag:
             officer_data['name'] = ' '.join(name_tag.get_text().split())
-        
+
         # Extract email (from mailto link)
         email_tag = contact_section.find('a', href=lambda href: href and 'mailto:' in href)
         if email_tag:
             email = email_tag['href'].replace('mailto:', '').strip()
             if email.endswith(('fhda.edu', 'deanza.edu')):
                 officer_data['email'] = email
-        
+
         # Extract phone (look for "408" in text)
         phone_text = contact_section.find(string=lambda text: '408' in str(text))
         if phone_text:
             officer_data['phone'] = phone_text.strip()
-        
+
         officers.append(officer_data)
-    
+
     return officers if officers else [{'name': 'N/A', 'email': 'N/A', 'phone': 'N/A'}]
 
 def extract_websites(element):
@@ -122,20 +123,28 @@ def extract_websites(element):
     return [site['href'] for site in websites] if websites else ['N/A']
 
 def save_to_json(data, filename='clubs_by_category.json'):
-    """Save data to JSON file with proper formatting"""
-    with open(filename, 'w', encoding='utf-8') as f:
+    """Save data to JSON file in a sibling 'data' directory"""
+    # 設定目標路徑 (跳出當前資料夾，進入同層級的 data 資料夾)
+    target_dir = os.path.join('..', 'data')
+
+    # 確保目標資料夾存在
+    os.makedirs(target_dir, exist_ok=True)
+
+    # 組合完整路徑
+    filepath = os.path.join(target_dir, filename)
+
+    with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
 if __name__ == "__main__":
     URL = "https://www.deanza.edu/clubs/club-list.html"
-    
+
     print("Starting club data scraping...")
     clubs_data = scrape_and_categorize_clubs(URL)
-    
+
     if clubs_data:
         save_to_json(clubs_data)
         print(f"Successfully saved data. Found {len(clubs_data)} categories.")
-        
         # Print summary statistics
         for category, clubs in clubs_data.items():
             print(f"\n[{category}] {len(clubs)} clubs")
