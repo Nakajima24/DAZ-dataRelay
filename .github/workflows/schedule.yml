@@ -2,17 +2,14 @@ name: Scheduled Scrapers
 
 on:
   schedule:
-    # 每月 1 號加州時間 00:42（UTC-7/UTC-8）
-    # 對應 UTC 時間：07:42（夏令時）或 08:42（冬令時）
-    - cron: '42 7 * * 1'
-  workflow_dispatch:  # 允許手動觸發
+    - cron: '42 7 * * 1'  # UTC 時間 07:42（加州時間 00:42 夏令時）
+  workflow_dispatch:
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -22,18 +19,26 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install requests beautifulsoup4
 
     - name: Run Club Scraper
-      run: python scrapers/club_scraper.py
+      run: |
+        cd scrapers
+        python club_scraper.py
+        cd ..
 
     - name: Run Calendar Scraper
-      run: python scrapers/calendar_scraper.py
+      run: |
+        cd scrapers
+        python calendar_scraper.py
+        cd ..
 
-    - name: Commit and push changes
+    - name: Commit and push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
         git add data/
-        git commit -m "Auto-update: Club and calendar data"
+        git commit -m "Auto-update: $(date +'%Y-%m-%d')"
         git push
